@@ -18,6 +18,8 @@
   function keyFromURL(url) {
     try {
       const u = new URL(url, window.location.origin);
+      // ✅ Only handle same-origin links; external URLs should NOT be intercepted
+      if (u.origin !== window.location.origin) return null;
       const p = (u.pathname || "/").replace(/\/+$/, "").toLowerCase() || "/";
       if (p === "/") return "chooser";
       if (p === "/developer") return "developer";
@@ -135,37 +137,20 @@
   // ---------------------------
   // Link interception
   // ---------------------------
-  document.addEventListener(
-    "click",
-    (e) => {
-      if (
-        e.defaultPrevented ||
-        e.button !== 0 ||
-        e.metaKey ||
-        e.ctrlKey ||
-        e.shiftKey ||
-        e.altKey
-      )
-        return;
-
-      const a = e.target.closest("a[href]");
-      if (!a) return;
-      if (a.target && a.target !== '_self') return;
-      const dl = a.getAttribute('download');
-      if (dl !== null) return;
-
-      const key = keyFromURL(a.href);
-      if (!key) return; // внешняя ссылка
-      if (key === currentKey()) {
-        e.preventDefault();
-        return;
-      }
-
-      e.preventDefault();
-      ensureAndSwap(key, { push: true });
-    },
-    true // capture-phase — перехватываем до навигации
-  );
+  document.addEventListener("click", (e) => {
+    const a = e.target.closest('a[href]');
+    if (!a) return;
+    if (e.metaKey || e.ctrlKey || e.shiftKey || e.button === 1) return;
+  
+    const href = a.getAttribute('href');
+    if (!href || href.startsWith('#') || href.startsWith('mailto:') || href.startsWith('tel:')) return;
+  
+    const key = keyFromURL(a.href);
+    if (!key) return; // external or unknown path → let browser handle it
+  
+    e.preventDefault();
+    ensureAndSwap(key, { push: true });
+  }, true);
 
   // ---------------------------
   // Init + Back/Forward
