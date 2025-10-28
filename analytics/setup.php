@@ -44,6 +44,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
           @chmod($target, 0660);
           $ok = true;
+          // redirect back to analytics index
+          header('Location: /analytics/');
+          exit;
         }
       }
     }
