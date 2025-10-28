@@ -56,6 +56,13 @@ function h($s){ return htmlspecialchars((string)$s, ENT_QUOTES|ENT_SUBSTITUTE,'U
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Analytics</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/modern-normalize/2.0.0/modern-normalize.min.css"/>
+  
+  <link rel="icon" type="image/png" href="img/favicon/favicon-96x96.png" sizes="96x96" />
+  <link rel="icon" type="image/svg+xml" href="img/favicon/favicon.svg" />
+  <link rel="shortcut icon" href="img/favicon/favicon.ico" />
+  <link rel="apple-touch-icon" sizes="180x180" href="img/favicon/apple-touch-icon.png" />
+  <link rel="manifest" href="img/favicon/site.webmanifest" />
+  
   <style>
     body{font:14px/1.45 system-ui,Segoe UI,Roboto,Arial;padding:18px;background:#0b0f14;color:#e5e7eb}
     .wrap{max-width:1100px;margin:0 auto}
