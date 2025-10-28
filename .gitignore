@@ -1,12 +1,30 @@
+# Analytics data & config
+analytics/analytics.db
 analytics/config.php
+analytics/*.tmp
 
+# Backups
 backup/
 backup.config.xml
 BackupFiles_v1.0.25.exe
 
-log/
+# Cache / builds
+cache/
+*.cache
+*.tmp
 
+# Personal data (keep only demo)
 data/user_analyst.json
 data/user_prog.json
 
-cache/
+# OS cruft
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Misc
+log/
+*.log

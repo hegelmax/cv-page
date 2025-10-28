@@ -3,13 +3,10 @@ declare(strict_types=1);
 require __DIR__.'/auth.php';
 
 // If config not created yet — go to setup
-if (!is_file(__DIR__.'/config.php')) {
-  header('Location: /analytics/setup.php');
-  exit;
-}
+if (!is_file(__DIR__.'/config.php')) { header('Location: /analytics/setup.php'); exit; }
 require __DIR__.'/config.php';
 
-+// simple rate limit: ≤10 attempts per 15 minutes per IP
+// simple rate limit: ≤10 attempts per 15 minutes per IP
 $ip = $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0';
 if (!isset($_SESSION['tries'])) $_SESSION['tries'] = [];
 $_SESSION['tries'] = array_filter(
@@ -19,6 +16,9 @@ $_SESSION['tries'] = array_filter(
 $tooMany = (count($_SESSION['tries']) >= 10);
 
 $error = '';
+// already signed in? go to dashboard
+if (analytics_is_auth()) { header('Location: /analytics/'); exit; }
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$tooMany) {
   $csrf = $_POST['csrf'] ?? '';
   if (!hash_equals($_SESSION['csrf'], $csrf)) {

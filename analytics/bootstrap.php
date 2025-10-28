@@ -16,7 +16,7 @@ function db(): PDO {
   ]);
   $pdo->exec('PRAGMA journal_mode=WAL;');
   $pdo->exec('PRAGMA synchronous=NORMAL;');
-  // таблицы
+  // Tables
   $pdo->exec("
     CREATE TABLE IF NOT EXISTS visits (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -33,7 +33,8 @@ function db(): PDO {
     CREATE INDEX IF NOT EXISTS idx_visits_path ON visits(path);
     CREATE INDEX IF NOT EXISTS idx_visits_ref ON visits(ref);
     CREATE INDEX IF NOT EXISTS idx_visits_type ON visits(type);
-    
+  ");
+  $pdo->exec("
     CREATE TABLE IF NOT EXISTS rate (ip TEXT PRIMARY KEY, ts INTEGER);
   ");
   return $pdo;
@@ -55,6 +56,6 @@ function get_ua(): string {
 }
 
 function get_cf_country(): ?string {
-  // Если сайт за Cloudflare — берём страну
+  // If the site is behind Cloudflare, we take the country
   return $_SERVER['HTTP_CF_IPCOUNTRY'] ?? null;
 }

@@ -3,10 +3,10 @@ declare(strict_types=1);
 require __DIR__ . '/bootstrap.php';
 require __DIR__ . '/auth.php';
 
-// проверка сессии
+// session check
 analytics_require_auth();
 
-// Параметры фильтров
+// Filter parameters
 $days = max(1, min(90, (int)($_GET['days'] ?? 30)));
 $path = trim($_GET['path'] ?? '');
 $country = trim($_GET['country'] ?? '');
@@ -18,7 +18,7 @@ if ($path !== '') { $where[] = "path = :path"; $params[':path'] = $path; }
 if ($country !== '') { $where[] = "country = :country"; $params[':country'] = strtoupper($country); }
 $sqlWhere = implode(' AND ', $where);
 
-// агрегаты по дням
+// aggregates by day
 $byDay = db()->prepare("
   SELECT date(ts/1000,'unixepoch') as d, COUNT(*) as c
   FROM visits WHERE $sqlWhere GROUP BY d ORDER BY d ASC
@@ -26,7 +26,7 @@ $byDay = db()->prepare("
 $byDay->execute($params);
 $rowsDay = $byDay->fetchAll();
 
-// топ источников
+// top sources
 $topRef = db()->prepare("
   SELECT COALESCE(NULLIF(ref,''),'(direct)') as r, COUNT(*) as c
   FROM visits WHERE $sqlWhere GROUP BY r ORDER BY c DESC LIMIT 12
@@ -34,7 +34,7 @@ $topRef = db()->prepare("
 $topRef->execute($params);
 $rowsRef = $topRef->fetchAll();
 
-// топ стран (если CF)
+// top countries (if CF)
 $topCountry = db()->prepare("
   SELECT COALESCE(NULLIF(country,''),'?') as cc, COUNT(*) as c
   FROM visits WHERE $sqlWhere GROUP BY cc ORDER BY c DESC LIMIT 12
@@ -42,7 +42,7 @@ $topCountry = db()->prepare("
 $topCountry->execute($params);
 $rowsCountry = $topCountry->fetchAll();
 
-// последние 50
+// last 50
 $last = db()->prepare("SELECT ts,url,ref,ip,country,lang,dpr,vp_w,vp_h,theme,type FROM visits WHERE $sqlWhere ORDER BY ts DESC LIMIT 50");
 $last->execute($params);
 $rowsLast = $last->fetchAll();
