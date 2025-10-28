@@ -1,0 +1,51 @@
+{
+  "name": "John Doe",
+  "title": "Software Engineer | Full-Stack Developer | System Architect",
+  "contact": {
+    "email": "john@example.com",
+    "phone": "+1 (202) 555-1234",
+    "location": "New York, USA",
+    "website": "https://portfolio.example.com",
+    "linkedin": "linkedin.com/in/johndoe"
+  },
+  "summary": "<b>Full-stack engineer</b> with 10+ years of experience building scalable web and cloud applications. Passionate about <b>automation, data analytics,</b> and <b>AI-powered systems</b>. Skilled in <b>Python, Node.js, React,</b> and <b>SQL</b>.",
+  "achievements": [
+    { "name": "Real-time Chatbot", "desc": "Built a multilingual chatbot using OpenAI GPT API and Twilio channels." },
+    { "name": "CI/CD Automation", "desc": "Deployed containerized apps to cloud with Docker and GitHub Actions." },
+    { "name": "E-commerce Analytics", "desc": "Implemented data pipelines for order prediction and BI dashboards." }
+  ],
+  "experience": [
+    {
+      "title": "Senior Software Engineer",
+      "companies": [{ "company": "TechNova", "location": "USA", "period": "2020 – Present" }],
+      "highlights": [
+        "Architected backend microservices with FastAPI and PostgreSQL.",
+        "Led a small frontend team building React dashboards.",
+        "Integrated OpenAI and payment APIs for SaaS automation."
+      ]
+    },
+    {
+      "title": "Full-Stack Developer",
+      "companies": [{ "company": "Softline Solutions", "location": "USA", "period": "2015 – 2020" }],
+      "highlights": [
+        "Developed CRM and ERP extensions in PHP and Vue.js.",
+        "Optimized SQL queries and ETL jobs for analytics.",
+        "Created reusable UI components and design system."
+      ]
+    }
+  ],
+  "education": [
+    { "degree": "B.Sc. in Computer Science", "institution": "New York University" },
+    { "degree": "Certified Cloud Architect", "institution": "AWS Academy" }
+  ],
+  "skills": {
+    "list": [
+      "Python", "JavaScript", "TypeScript", "React", "Node.js",
+      "SQL", "Docker", "Git", "REST APIs", "Power BI"
+    ]
+  },
+  "languages": [
+    { "name": "English", "level": "Native" },
+    { "name": "Spanish", "level": "Intermediate" }
+  ]
+}

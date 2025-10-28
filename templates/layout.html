@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light"> <!-- data-theme переключаем JS'ом -->
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>MAXIM HEGEL — Resume</title>
+  <link rel="canonical" href="##CANONICAL##" />
+  <meta name="color-scheme" content="light dark"/>
+
+  <script>
+    (function(){try{
+      var k='cv.theme', t=localStorage.getItem(k);
+      if(!t){ if(window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches) t='dark'; else t='light'; }
+      document.documentElement.setAttribute('data-theme', t);
+    }catch(e){}})();
+  </script>
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"/>
+  <link rel="stylesheet" href="/assets/main.ssr.css"/>
+  
+  <link rel="icon" type="image/png" href="img/favicon/favicon-96x96.png" sizes="96x96" />
+  <link rel="icon" type="image/svg+xml" href="img/favicon/favicon.svg" />
+  <link rel="shortcut icon" href="img/favicon/favicon.ico" />
+  <link rel="apple-touch-icon" sizes="180x180" href="img/favicon/apple-touch-icon.png" />
+  <link rel="manifest" href="img/favicon/site.webmanifest" />
+</head>
+<body>
+  <!-- 🔘 Глобальная кнопка темы -->
+  <button id="themeToggle" class="theme-btn" aria-label="Toggle theme" title="Toggle dark mode">
+    <i class="fa-solid fa-moon"></i>
+  </button>
+
+  <div id="app">
+    ##CONTENT##
+  </div>
+
+  <!-- порядок важен: сначала theme.js (ставит тему), затем AJAX-переключатель -->
+  <script src="/assets/theme.js"></script>
+  <script defer src="/assets/analytics.js"></script>
+  <script src="/assets/switcher.ajax.js"></script>
+</body>
+</html>

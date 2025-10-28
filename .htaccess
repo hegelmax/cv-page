@@ -1,0 +1,46 @@
+# .htaccess
+RewriteEngine On
+RewriteBase /
+
+# 1) serve static as-is
+RewriteCond %{REQUEST_URI} \.(?:css|js|png|jpe?g|gif|svg|ico|webp|json|txt)$ [NC]
+RewriteCond %{REQUEST_FILENAME} -f
+RewriteRule ^ - [L]
+
+# provide analytics directly
+RewriteCond %{REQUEST_URI} ^/analytics/ [NC]
+RewriteRule ^ - [L]
+
+# 2) if file/dir exists — serve directly
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# 3) pretty routes
+RewriteRule ^$ index.php [L,QSA]
+RewriteRule ^(developer|analyst)/?$ index.php [L,QSA]
+
+# --- Optional: cache/compression ---
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType text/css "access plus 7 days"
+  ExpiresByType application/javascript "access plus 7 days"
+  ExpiresByType image/svg+xml "access plus 30 days"
+  ExpiresByType image/webp "access plus 30 days"
+  ExpiresByType image/png "access plus 30 days"
+  ExpiresByType image/jpeg "access plus 30 days"
+</IfModule>
+
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/plain text/css application/javascript application/json image/svg+xml
+</IfModule>
+
+# Small CSP (carefully with CDN and QR):
+Header set X-Content-Type-Options "nosniff"
+Header set Referrer-Policy "strict-origin-when-cross-origin"
+
+# CSP — allow your own host, CDN Chart.js, and Font Awesome (if you use it)
+Header set Content-Security-Policy "default-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; script-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; connect-src 'self'; font-src 'self' https://cdnjs.cloudflare.com; frame-ancestors 'none'"
+
+# Permissions-Policy — restricting access to sensors
+Header set Permissions-Policy "geolocation=(), microphone=(), camera=(), interest-cohort=()"

@@ -1,0 +1,51 @@
+{
+  "name": "John Doe",
+  "title": "Product Owner | Business Analyst | Data Strategy Lead",
+  "contact": {
+    "email": "john@example.com",
+    "phone": "+1 (202) 555-1234",
+    "location": "New York, USA",
+    "website": "https://portfolio.example.com",
+    "linkedin": "linkedin.com/in/johndoe"
+  },
+  "summary": "<b>Business analyst</b> and <b>product owner</b> experienced in leading data-driven transformation projects. Skilled in <b>requirements management, KPI design,</b> and <b>process automation</b> using modern BI and AI tools.",
+  "achievements": [
+    { "name": "Forecast & BI Platform", "desc": "Launched enterprise reporting system used by 200+ users across departments." },
+    { "name": "Workflow Automation", "desc": "Reduced manual reporting time by 60% with Power BI and SQL automation." },
+    { "name": "Data-Driven Roadmap", "desc": "Introduced unified KPI framework for cross-team analytics alignment." }
+  ],
+  "experience": [
+    {
+      "title": "Lead Product Owner",
+      "companies": [{ "company": "Insight Systems", "location": "USA", "period": "2020 – Present" }],
+      "highlights": [
+        "Define product KPIs and manage agile delivery for analytics platform.",
+        "Collaborate with engineering and design teams to align business goals.",
+        "Supervise backlog, roadmap, and release metrics."
+      ]
+    },
+    {
+      "title": "Business Analyst",
+      "companies": [{ "company": "Retail Analytics Inc.", "location": "USA", "period": "2014 – 2020" }],
+      "highlights": [
+        "Gathered requirements and modelled BI solutions with Power BI.",
+        "Implemented SQL-based data warehouse and automated ETL jobs.",
+        "Provided decision-support dashboards to executive board."
+      ]
+    }
+  ],
+  "education": [
+    { "degree": "MBA in Business Analytics", "institution": "Columbia University" },
+    { "degree": "B.Sc. in Economics", "institution": "University of Illinois" }
+  ],
+  "skills": {
+    "list": [
+      "Business Analysis", "Agile/Scrum", "SQL", "Power BI",
+      "Tableau", "Python", "Process Automation", "KPI Design"
+    ]
+  },
+  "languages": [
+    { "name": "English", "level": "Native" },
+    { "name": "French", "level": "Intermediate" }
+  ]
+}

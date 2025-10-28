@@ -1,0 +1,12 @@
+analytics/config.php
+
+backup/
+backup.config.xml
+BackupFiles_v1.0.25.exe
+
+log/
+
+data/user_analyst.json
+data/user_prog.json
+
+cache/
