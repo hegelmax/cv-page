@@ -38,7 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !$tooMany) {
       // optional session signature (IP/UA)
       $_SESSION['sig'] = hash('sha256', ($ip.'|'.($_SERVER['HTTP_USER_AGENT'] ?? '')));
       // ignore admin's own visits in analytics
-      setcookie('an_ignore', '1', time()+31536000, '/', '', !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off', true);
+      setcookie('an_ignore', '1', time()+31536000, '/', '', !empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off', false);
       
       $to = $_GET['redirect'] ?? '/analytics/';
       header('Location: '.$to);

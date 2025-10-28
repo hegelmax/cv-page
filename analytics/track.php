@@ -3,6 +3,13 @@
 declare(strict_types=1);
 require __DIR__ . '/bootstrap.php';
 
+// Ignore admin hits via HttpOnly cookie
+if (!empty($_COOKIE['an_ignore'])) {
+  header('Content-Type: application/json; charset=UTF-8');
+  echo '{"ok":true}';
+  exit;
+}
+
 // basic origin/referrer guard (anti-forgery)
 $host = $_SERVER['HTTP_HOST'] ?? '';
 $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
