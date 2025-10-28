@@ -71,7 +71,7 @@ You can find how it looks like here [https://cv.hgl.mx](https://cv.hgl.mx)
 1) **Clone** and go to the project
 ```bash
 git clone https://github.com/hegelmax/cv-page.git
-cd mycv
+cd cv-page
 ```
 
 2) **Demo data** (already provided):
