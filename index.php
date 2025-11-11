@@ -156,7 +156,7 @@ if ($trackCount === 0) {
         echo $html;
         exit;
     }
-    echo render_layout_page($html);
+    echo render_layout_page($html, 'Resume or user not found');
     exit;
 }
 
@@ -175,7 +175,7 @@ if ($trackSlug === '') {
             echo render_chooser_inner($TRACKS, $currentUser);
             exit;
         }
-        echo render_layout_page(render_chooser_inner($TRACKS, $currentUser));
+        echo render_layout_page(render_chooser_inner($TRACKS, $currentUser), 'Resume select');
         exit;
     }
 } else {
@@ -188,7 +188,7 @@ if ($trackSlug === '') {
             echo $html;
             exit;
         }
-        echo render_layout_page($html);
+        echo render_layout_page($html, '404 - Not found');
         exit;
     }
 
@@ -198,7 +198,7 @@ if ($trackSlug === '') {
 $meta = $TRACKS[$track] ?? null;
 if (!$meta) {
     http_response_code(404);
-    echo render_layout_page('<h1>Not found</h1>');
+    echo render_layout_page('<h1>Not found</h1>', '404 - Not found');
     exit;
 }
 
@@ -210,7 +210,7 @@ $jsonPath     = (is_string($jsonPrimary) && file_exists($jsonPrimary))
   : (is_string($jsonFallback) ? $jsonFallback : $jsonPrimary);
 
 // cache key: user + track, so that different users do not overlap
-$cacheKey  = ($currentUser === DEFAULT_USER ? '' : $currentUser . '__') . $track;
+$cacheKey  = ($currentUser === DEFAULT_USER ? '' : $currentUser . ':') . $track;
 $innerPath = __DIR__ . "/cache/{$cacheKey}.inner.html";
 
 // cache invalidation: by mtime + version in JSON (if any)
@@ -262,4 +262,4 @@ if ($isPartial) {
   header('X-Partial: 1');
   readfile($innerPath); exit;
 }
-echo render_layout_page(file_get_contents($innerPath));
+echo render_layout_page(file_get_contents($innerPath), strtoupper($json['name'] ?? '').' - Resume'.($json['track']['label'] ? ' ['.($json['track']['label'].']' : ''));

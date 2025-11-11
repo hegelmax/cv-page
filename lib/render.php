@@ -8,7 +8,7 @@ function tpl(string $name): string {
   return $memo[$name] = (file_exists($path) ? file_get_contents($path) : '');
 }
 
-function render_layout_page(string $inner): string {
+function render_layout_page(string $inner, string $title): string {
   $tpl = tpl('layout.html');
 
   // Collecting absolute canonical
@@ -18,6 +18,7 @@ function render_layout_page(string $inner): string {
   $canonical = $scheme.'://'.$host.$uri;
 
   $tpl = str_replace('##CANONICAL##', htmlspecialchars($canonical, ENT_QUOTES), $tpl);
+  $tpl = str_replace('##TITLE##', $title, $tpl);
   return str_replace('##CONTENT##', $inner, $tpl);
 }
 
