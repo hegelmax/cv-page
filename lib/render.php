@@ -21,6 +21,14 @@ function render_layout_page(string $inner): string {
   return str_replace('##CONTENT##', $inner, $tpl);
 }
 
+function build_image(?string $src): string {
+  $src = trim((string)$src);
+  if ($src === '') {
+    return '';
+  }
+  return '<div class="image"><img src="'.h($src).'"></div>';
+}
+
 
 function render_chooser_inner(array $TRACKS): string {
   $tpl = tpl('chooser.html');
@@ -52,7 +60,23 @@ function render_resume_inner(string $track, array $meta, array $json, string $te
   return str_replace(['##TOPBAR##','##BODY##'], [$topbar, $body], $tpl);
 }
 
+function section_if_not_empty(string $title, string $html): string {
+  if (trim($html) === '') {
+    return '';
+  }
+  return '<div class="section-title">'.h($title).'</div>' . $html;
+}
+
 function build_mapping(array $d): array {
+  $exp      = blocks_experience($d['experience'] ?? []);
+  $edu      = blocks_education($d['education'] ?? []);
+  $ach      = blocks_generic($d['achievements'] ?? [], fn($a)=>'<div class="achiv">⭐ '.h($a['name']??'').'</div><div class="achiv-desc">'.($a['desc']??'').'</div>');
+  $skills   = blocks_badges($d['skills']['list'] ?? []);
+  $langs    = blocks_languages($d['languages'] ?? []);
+  $publ     = blocks_generic($d['publications'] ?? [], fn($a)=>'<div class="publ"><i class="fa-solid fa-book"></i> '.h($a['what']??'').'</div><div class="publ-desc">('.h($a['where']??'').')</div>');
+  $awards   = blocks_generic($d['awards'] ?? [], fn($a)=>'<div class="award">'.h($a['what']??'').'</div><div class="award-desc">('.h($a['where']??'').', '.h($a['when']??'').')</div>');
+  $certs    = blocks_generic($d['certification'] ?? [], fn($c)=>'<div class="cert-title"><i class="fa-solid fa-certificate"></i> '.h($c['degree']??'').'</div><div class="cert-desc">'.h($c['institution']??'').'</div>');
+  
   return [
     'PAGE_HEADER'         => strtoupper($d['name'] ?? ''),
     'PAGE_TITLE'          => $d['title'] ?? '',
@@ -62,14 +86,16 @@ function build_mapping(array $d): array {
     'CONTACT_PHONE'       => $d['contact']['phone'] ?? '',
     'CONTACT_LOCATION'    => $d['contact']['location'] ?? '',
     'SUMMARY'             => $d['summary'] ?? '',
-    'EXPERIENCE_BLOCK'    => blocks_experience($d['experience'] ?? []),
-    'EDUCATION_BLOCK'     => blocks_education($d['education'] ?? []),
-    'ACHIEVEMENTS_BLOCK'  => blocks_generic($d['achievements'] ?? [], fn($a)=>'<div class="achiv">⭐ '.h($a['name']??'').'</div><div class="achiv-desc">'.($a['desc']??'').'</div>'),
-    'SKILLS_BLOCK'        => blocks_badges($d['skills']['list'] ?? []),
-    'LANGUAGES_BLOCK'     => blocks_languages($d['languages'] ?? []),
-    'PUBLICATIONS_BLOCK'  => blocks_generic($d['publications'] ?? [], fn($a)=>'<div class="publ"><i class="fa-solid fa-book"></i> '.h($a['what']??'').'</div><div class="publ-desc">('.h($a['where']??'').')</div>'),
-    'AWARDS_BLOCK'        => blocks_generic($d['awards'] ?? [], fn($a)=>'<div class="award">'.h($a['what']??'').'</div><div class="award-desc">('.h($a['where']??'').', '.h($a['when']??'').')</div>'),
-    'CERTS_BLOCK'         => blocks_generic($d['certification'] ?? [], fn($c)=>'<div class="cert-title"><i class="fa-solid fa-certificate"></i> '.h($c['degree']??'').'</div><div class="cert-desc">'.h($c['institution']??'').'</div>'),
+    'IMAGE_BLOCK'         => build_image($d['image'] ?? ''),
+    
+    'EXPERIENCE_SECTION'   => section_if_not_empty('PROFESSIONAL EXPERIENCE', $exp),
+    'EDUCATION_SECTION'    => section_if_not_empty('EDUCATION',               $edu),
+    'ACHIEVEMENTS_SECTION' => section_if_not_empty('KEY ACHIEVEMENTS',        $ach),
+    'SKILLS_SECTION'       => section_if_not_empty('SKILLS',                  $skills),
+    'LANGUAGES_SECTION'    => section_if_not_empty('LANGUAGES',               $langs),
+    'PUBLICATIONS_SECTION' => section_if_not_empty('SPEAKING / PUBLICATIONS', $publ),
+    'AWARDS_SECTION'       => section_if_not_empty('AWARDS & RECOGNITIONS',   $awards),
+    'CERTS_SECTION'        => section_if_not_empty('CERTIFICATION',           $certs)
   ];
 }
 
@@ -83,11 +109,14 @@ function blocks_experience(array $exps): string {
     }
     $out.='<ul>';
     foreach(($job['highlights']??[]) as $hgl){ $out.='<li>'.h($hgl).'</li>'; }
-    $out.='</ul><div class="project-title"><i class="fa-solid fa-layer-group"></i> Projects:</div>';
-    foreach(($job['projects']??[]) as $p){
-      $out.='<div class="project"><div class="project-name"><span class="details"><i class="fa-solid fa-circle-check"></i></span> '.h($p['name']??'').'</div><div class="project-desc">'.($p['description']??'').'</div>';
-      foreach(($p['technologies']??[]) as $s){ $out.='<span class="badge">'.h($s).'</span>'; }
-      $out.='</div>';
+    $out.='</ul>';
+    if (!empty($job['projects']??[])) {
+      $out.='<div class="project-title"><i class="fa-solid fa-layer-group"></i> Projects:</div>';
+      foreach(($job['projects']??[]) as $p){
+        $out.='<div class="project"><div class="project-name"><span class="details"><i class="fa-solid fa-circle-check"></i></span> '.h($p['name']??'').'</div><div class="project-desc">'.($p['description']??'').'</div>';
+        foreach(($p['technologies']??[]) as $s){ $out.='<span class="badge">'.h($s).'</span>'; }
+        $out.='</div>';
+      }
     }
     $out.='</div>';
   } return $out;

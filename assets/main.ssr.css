@@ -141,7 +141,7 @@ a.grey-link:hover { border-bottom-color: rgba(55,65,81,.7); }
   letter-spacing: .3px;
 }
 .subtitle { color: var(--brand); font-weight: 600; font-size: 15px; margin: 0; }
-.qr img { width: 100px; border-radius: 8px; }
+.image img { width: 100px; border-radius: 8px; }
 .contact {
   margin-top: 12px;
   font-size: 14px;
@@ -238,7 +238,7 @@ a.grey-link:hover { border-bottom-color: rgba(55,65,81,.7); }
   #app { padding: 18px 18px; margin: 16px; }
   .two-column { grid-template-columns: 1fr; gap: 16px; }
   .chooser { grid-template-columns: 1fr; }
-  .qr img { width: 100px; }
+  .image img { width: 100px; }
 }
 @media (max-width: 420px) {
   .title h1 { font-size: 26px; }
