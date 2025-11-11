@@ -30,15 +30,24 @@ function build_image(?string $src): string {
 }
 
 
-function render_chooser_inner(array $TRACKS): string {
+function render_chooser_inner(array $TRACKS, string $user = DEFAULT_USER): string {
   $tpl   = tpl('chooser.html');
   $cards = '';
 
+  $isDefault = ($user === DEFAULT_USER);
+
   foreach ($TRACKS as $key => $t) {
-    $label = $t['label'] ?? ucfirst($key);
+    $slug  = (string)$key;
+    $label = $t['label'] ?? ucfirst($slug);
     $icon  = $t['icon']  ?? 'fa-file-lines';
     $desc  = trim((string)($t['description'] ?? ''));
-    $cards .= "<a class='card' href='/" . h($key) . "'>"
+
+    // /slug for the default user and /user/slug for others
+    $href = $isDefault
+      ? '/' . h($slug)
+      : '/' . h($user) . '/' . h($slug);
+
+    $cards .= "<a class='card' href=\"{$href}\">"
             . "<i class='fa-solid " . h($icon) . "'></i>"
             . "<div><h3>" . h($label) . "</h3>";
     $cards .= ($desc !== '' ? "<p>" . h($desc) . "</p>" : '');
@@ -49,7 +58,7 @@ function render_chooser_inner(array $TRACKS): string {
 }
 
 
-function render_resume_inner(string $track, array $meta, array $json, string $templatePath, array $TRACKS): string {
+function render_resume_inner(string $user, string $track, array $meta, array $json, string $templatePath, array $TRACKS): string {
   $mapping   = build_mapping($json);
   $bodyTpl   = file_get_contents($templatePath) ?: '';
   $body      = preg_replace_callback('/##([A-Z0-9_]+)##/', fn($m) => $mapping[$m[1]] ?? '', $bodyTpl);
@@ -72,6 +81,9 @@ function render_resume_inner(string $track, array $meta, array $json, string $te
 
   $segmentHtml = '';
 
+  $isDefault  = ($user === DEFAULT_USER);
+  $keyPrefix  = $isDefault ? '' : ($user . '/');   // key for AJAX (without leading /)
+
   if ($trackCount > 1) {
     // 2.1. Buttons
     $buttonsHtml = '';
@@ -81,33 +93,54 @@ function render_resume_inner(string $track, array $meta, array $json, string $te
       $short = $t['short'] ?? (explode(' ', trim($label))[0] ?: $label);
       $icon  = $t['icon']  ?? 'fa-file-lines';
 
+      // /slug или /user/slug
+      $href = $isDefault
+        ? '/' . h($slug)
+        : '/' . h($user) . '/' . h($slug);
+
       $buttonsHtml .=
-        "<a class='btn ".($slug === $track ? "active" : "")."' href='/".h($slug)."'>".
-          "<i class='fa-solid ".h($icon)."'></i> ".
-          h($short).
-        "</a>";
+        "<a class='btn ".($slug === $track ? "active" : "")."' href=\"{$href}\">"
+        . "<i class='fa-solid " . h($icon) . "'></i>"
+        . "<span class='short'>" . h($short) . "</span>"
+        . "<span class='full'>"  . h($label) . "</span>"
+        . "</a>";
     }
-    $buttonsHtml = "<div class='seg-buttons'>".$buttonsHtml."</div>";
 
-    // 2.2. Drop-down list
-    $selectHtml = "<div class='seg-select-wrapper'><select id='trackSelect' class='seg-select'>";
+    // 2.2. Select
+    $selectHtml = "<select id=\"track-select\" class=\"selector\">";
     foreach ($TRACKS as $key => $t) {
-      $slug     = (string)$key;
-      $label    = $t['label'] ?? ucfirst($slug);
-      $selected = ($slug === $track) ? ' selected' : '';
-      $selectHtml .= "<option value='".h($slug)."'".$selected.">".h($label)."</option>";
-    }
-    $selectHtml .= "</select></div>";
+      $slug   = (string)$key;
+      $label  = $t['label'] ?? ucfirst($slug);
+      $selectedAttr = ($slug === $track ? " selected" : "");
 
-    // 2.3. Both options in SEGMENT
-    $segmentHtml = $buttonsHtml.$selectHtml;
+      // key for JS: "developer" or "user/developer"
+      $keyValue = $keyPrefix . $slug;
+
+      $selectHtml .= "<option value=\"" . h($keyValue) . "\"{$selectedAttr}>"
+                   . h($label)
+                   . "</option>";
+    }
+    $selectHtml .= "</select>";
+
+    $segmentHtml =
+      "<div class=\"seg seg--buttons\" data-seg=\"buttons\">{$buttonsHtml}</div>" .
+      "<div class=\"seg seg--select\" data-seg=\"select\">{$selectHtml}</div>";
   }
 
-  $topbar = str_replace('##SEGMENT##', $segmentHtml, $topbarTpl);
+  // 3) Debug / demo badge if using fallback JSON
+  $demoBadge = '';
+  if (!empty($meta['usingDemo'])) {
+    $demoBadge = '<button type="button" class="ghost" title="This view uses demo JSON fallback.">'
+               . '<i class="fa-solid fa-triangle-exclamation"></i> Demo data</button>';
+  }
 
-  $tpl = tpl('resume_inner.html');
-  return str_replace(['##TOPBAR##','##BODY##'], [$topbar, $body], $tpl);
+  $segmentHtml .= $demoBadge;
+
+  $topbar   = str_replace('##SEGMENT##', $segmentHtml, $topbarTpl);
+  $tpl      = tpl('resume_inner.html');
+  return str_replace( ['##TOPBAR##', '##BODY##'], [$topbar, $body], $tpl );
 }
+
 
 function section_if_not_empty(string $title, string $html): string {
   if (trim($html) === '') {

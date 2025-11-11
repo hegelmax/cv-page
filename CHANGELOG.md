@@ -2,6 +2,44 @@
 
 All notable changes to **MyCV** project.
 
+## [v1.2.0] — Multi-User Resume Analytics
+
+### 🚀 Added
+- **Multi-user resume tracking:**  
+  Each visit is now automatically linked to a logical `user` (resume owner) detected from the URL path.  
+  - `/` and `/resume_slug` → `default`  
+  - `/user_name` or `/user_name/resume_slug` → corresponding user (if `data/user_name` folder exists)  
+- **New `user` column** in the `visits` table with automatic migration support.  
+- **Dynamic user detection** built into `track.php` using the `detect_user_from_path()` function.  
+- **User filter** in the analytics dashboard to view statistics per user.  
+- **“Top users” table** displaying most viewed users and their visit counts.  
+- **User column** added to the “Last 50 hits” table for better visibility of per-user traffic.  
+- **Automatic schema migrations** from `./analytics/sql/` folder.  
+  - Each migration file is executed once and tracked in `schema_migrations`.  
+  - Base schema moved to `001_base_schema.sql`.
+
+### ✨ Changed
+- `bootstrap.php` refactored:  
+  - All SQL schema creation and migrations are now externalized to separate `.sql` files in `/analytics/sql/`.  
+  - Automatic detection and upgrade for existing databases (adds `user` column if missing).  
+- Improved database initialization with transactional migration system.  
+- Cleaner and modular architecture: migration logic decoupled from runtime code.
+
+### 🧹 Removed
+- Hard-coded SQL definitions from `bootstrap.php`.  
+- Direct table-creation logic inline with analytics logic — now replaced by migration files.
+
+### 💡 Impact
+- The analytics system now supports multiple resume owners with independent statistics.  
+- Safer schema evolution and easier maintenance.  
+- Database updates happen automatically on first run — no manual SQL execution required.  
+- Backward compatibility preserved for existing analytics data.
+
+---
+
+_Release date: 2025-11-11_
+
+
 ## [v1.1.0] — Responsive Topbar Redesign
 
 ### 🚀 Added

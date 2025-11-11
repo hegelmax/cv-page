@@ -3,19 +3,14 @@ analytics/analytics.db
 analytics/config.php
 analytics/*.tmp
 
-# Backups
-backup/
-backup.config.xml
-BackupFiles_v1.0.25.exe
-
 # Cache / builds
 cache/
 *.cache
 *.tmp
 
 # Personal data (keep only demo)
-data/user_analyst.json
-data/user_prog.json
+data/default/user_analyst.json
+data/default/user_prog.json
 
 # OS cruft
 .DS_Store

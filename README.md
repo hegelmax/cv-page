@@ -3,8 +3,10 @@
 A lightweight, self-hosted resume/portfolio app built with **PHP + JSON + AJAX**.  
 It’s fast, privacy-friendly, and includes a secure built-in **Analytics Dashboard** (SQLite + Chart.js).
 
+Now supports **multiple users** — each with their own resume set and analytics stats.
+
 Demo data (no personal info): **John Doe** for both tracks.  
-🔗 Demo: [https://cv.hgl.mx](https://cv.hgl.mx)
+🔗 Demo: [https://cv.hgl.mx/demo](https://cv.hgl.mx/demo)
 
 ---
 
@@ -15,9 +17,10 @@ Demo data (no personal info): **John Doe** for both tracks.
 - 🌓 **Light/Dark theme** toggle (auto-saved; print always light)  
 - 🧩 **Smart caching** — auto-rebuild on JSON/template change  
 - 📊 **Built-in Analytics** — local SQLite logger with charts  
+- 🧠 **Multi-user support** — each user has their own resumes and stats  
 - 🔐 **Secure web login + setup wizard** for analytics  
 - 🧱 **No third-party trackers** or external databases  
-- 📦 **Demo fallback**: loads John Doe JSONs if real data absent
+- 📦 **Demo fallback**: loads default or demo JSONs if real data absent  
 
 ---
 
@@ -25,67 +28,108 @@ Demo data (no personal info): **John Doe** for both tracks.
 
 ```
 /
-├─ index.php              # Router and cache logic
-├─ init.php               # Ensures /cache directory exists
-├─ lib/render.php         # Template + cache rendering
-├─ analytics/             # Built-in dashboard
-│   ├─ setup.php          # First-time setup (login+password)
-│   ├─ login.php, logout.php, auth.php
-│   ├─ index.php          # Chart.js dashboard
-│   ├─ track.php          # Beacon collector (rate-limited)
-│   ├─ bootstrap.php      # SQLite schema + helpers
-│   ├─ config.php         # Credentials (auto-generated)
-│   └─ cleanup.php        # Optional rotation/VACUUM
+├─ index.php # Router and cache logic
+├─ init.php # Ensures /cache directory exists
+├─ lib/render.php # Template + cache rendering
+├─ analytics/ # Built-in dashboard
+│ ├─ setup.php # First-time setup (login+password)
+│ ├─ login.php, logout.php, auth.php
+│ ├─ index.php # Chart.js dashboard (now with user filter)
+│ ├─ track.php # Beacon collector (logs per-user hits)
+│ ├─ bootstrap.php # SQLite migrations + helpers
+│ ├─ sql/
+│ │ ├─ 001_base_schema.sql # Base schema (visits, rate, indexes)
+│ │ └─ (future migrations…) # Additional .sql files auto-applied
+│ ├─ config.php # Credentials (auto-generated)
+│ └─ cleanup.php # Optional rotation/VACUUM
 ├─ data/
-│   ├─ user_prog.json
-│   ├─ user_analyst.json
-│   └─ demo/
-│       ├─ john_doe_prog.json
-│       └─ john_doe_analyst.json
+│ ├─ default/ # Default (public) user resumes
+│ ├─ user1/ # Example user 1
+│ ├─ user2/ # Example user 2
+│ └─ demo/ # Demo fallback
 ├─ templates/
-│   ├─ layout.html
-│   ├─ chooser.html
-│   ├─ main.template.html
-│   └─ topbar.html
+│ ├─ layout.html
+│ ├─ chooser.html
+│ ├─ main.template.html
+│ └─ topbar.html
 ├─ assets/
-│   ├─ main.ssr.css
-│   ├─ switcher.ajax.js
-│   ├─ analytics.js
-│   └─ theme.js
-├─ cache/                 # Auto-generated inner HTML
-├─ .htaccess              # Routing + CSP headers
+│ ├─ main.ssr.css
+│ ├─ switcher.ajax.js
+│ ├─ analytics.js
+│ └─ theme.js
+├─ cache/ # Auto-generated inner HTML
+├─ .htaccess # Routing + CSP headers
 └─ CHANGELOG.md
 ```
 
+
 ---
 
-## 🧠 How It Works
+## 🧠 Multi-User Routing
 
-### Resume Tracks
-- `/developer` → loads `data/user_prog.json` (fallback to demo)  
-- `/analyst` → loads `data/user_analyst.json` (fallback to demo)  
-- `/` → track chooser page  
+### URL Patterns
+| Path | Behavior |
+|------|-----------|
+| `/` | Default user chooser page (if multiple resumes) |
+| `/resume_slug` | Loads resume from `data/default/resume_slug.json` |
+| `/user_name` | If user has one resume, opens it directly |
+| `/user_name/resume_slug` | Loads `data/user_name/resume_slug.json` |
 
-Server rebuilds cached HTML (`cache/*.inner.html`) when JSON or template changes, or when version field differs.
+### Auto-Detection
+Each visit is automatically tagged with its **user** based on the URL path.  
+This value is stored in the analytics database (`visits.user`).
 
-### Partial Rendering
-`switcher.ajax.js` intercepts links, fetches partial HTML with  
-`X-Requested-With: fetch-partial`, animates fade, updates History.
+---
 
-### Analytics Setup Flow
-1. Go to `/analytics/` → if config missing → redirects to setup wizard  
-2. Enter login + password → config.php auto-generated  
-3. After setup, user redirected back to analytics dashboard  
-4. Subsequent logins handled via `/analytics/login.php`  
-5. Logged-in users are excluded from stats via cookie `an_ignore=1`
+## 📊 Analytics Overview
+
+### Client (Browser)
+**File:** `assets/analytics.js`  
+Sends: URL, referrer, UTM, language, timezone, DPR, viewport, theme, perf metrics.  
+Respects: Do-Not-Track, localhost, and `an_ignore` cookie.
+
+### Server (Collector)
+**File:** `analytics/track.php`  
+Now supports **multi-user tracking**:
+- Automatically detects `user` from request path.
+- Writes hits to `analytics/analytics.db` with `user` column.
+- Rate-limited (1 hit / 300 ms per IP).
+- Rejects cross-origin and `/analytics/*` requests.
+
+### Dashboard
+**File:** `analytics/index.php`
+- Filter by **days**, **path**, **country**, or **user**  
+- Tables: Top Users, Top Paths, Referrers, Countries, Recent Hits  
+- Charts: Visits by day, referrers, countries  
+- Auto-excludes admin (via `an_ignore=1` cookie)
+
+---
+
+## 🧩 Database & Migrations
+
+The app now uses **versioned SQL migrations** under `/analytics/sql/`.
+
+- **`001_base_schema.sql`** — base structure for `visits`, `rate`, and indexes  
+- New migrations can be added as `002_*.sql`, `003_*.sql`, etc.  
+- Each migration runs **once** and is tracked in `schema_migrations`.  
+- Existing databases are automatically upgraded (adds missing `user` column).  
+
+No manual SQL needed — migrations apply on first access.
+
+---
+
+## 🧾 CHANGELOG
+
+See [CHANGELOG.md](./CHANGELOG.md) for the full version history.  
+Latest release: **v1.2.0 — Multi-User Resume Analytics**
 
 ---
 
 ## 🔧 Requirements
 
-- PHP 8.1 or higher with SQLite3  
-- Apache (with `.htaccess`) or Nginx rewrite  
-- HTTPS recommended (secure cookies)
+- PHP 8.1+ with SQLite3  
+- Apache or Nginx with rewrites  
+- HTTPS recommended (for secure cookies)
 
 ---
 
@@ -104,25 +148,6 @@ Default public pages:
 - `/developer` → Developer resume (John Doe demo)  
 - `/analyst` → Analyst resume (John Doe demo)  
 - `/analytics/` → Dashboard (after login)
-
----
-
-## 📊 Analytics Details
-
-**Client:** `assets/analytics.js`
-- Sends minimal info: URL, referrer, UTM, language, timezone, DPR, viewport, theme, basic perf.  
-- Respects Do-Not-Track, localhost, and `an_ignore` cookie.  
-
-**Server:** `analytics/track.php`
-- Inserts records into SQLite DB (`analytics/analytics.db`)  
-- Limits rate (≤ 1 hit/300 ms per IP)  
-- Rejects cross-origin requests  
-- Excludes `/analytics/*` from tracking  
-
-**Dashboard:** `analytics/index.php`
-- Filter by days, path, or country  
-- Charts for visits, referrers, countries, and recent hits  
-- Automatic redirection after first-time setup  
 
 ---
 
@@ -152,6 +177,7 @@ Include a `"version"` key to trigger automatic rebuilds when changed.
 - **Sessions:** strict mode, HttpOnly, SameSite=Lax, Secure (HTTPS)  
 - **Rate limiting** for analytics login and tracking  
 - **Cache invalidation** based on JSON/template mtime or version  
+- **Automatic DB migrations** (no manual SQL)  
 - **Print optimization**: Light theme, clean layout  
 
 ---

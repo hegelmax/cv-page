@@ -1,29 +1,25 @@
 # .htaccess
-RewriteEngine On
-RewriteBase /
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+  
+  # Don't rewrite existing files or dirs
+  RewriteCond %{REQUEST_FILENAME} -f [OR]
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule ^ - [L]
 
-# Close direct access to service scripts
-<FilesMatch "^(bootstrap|auth|config|config\.sample|cleanup)\.php$">
-  Require all denied
-</FilesMatch>
+  # Don't touch analytics dashboard
+  RewriteCond %{REQUEST_URI} !^/analytics/
 
-# 1) serve static as-is
-RewriteCond %{REQUEST_URI} \.(?:css|js|png|jpe?g|gif|svg|ico|webp|json|txt)$ [NC]
-RewriteCond %{REQUEST_FILENAME} -f
-RewriteRule ^ - [L]
+  # Root
+  RewriteRule ^$ index.php [L,QSA]
 
-# provide analytics directly
-RewriteCond %{REQUEST_URI} ^/analytics/ [NC]
-RewriteRule ^ - [L]
+  # /user_name/resume_slug
+  RewriteRule ^([A-Za-z0-9_-]+)/([A-Za-z0-9_-]+)/?$ index.php [L,QSA]
 
-# 2) if file/dir exists — serve directly
-RewriteCond %{REQUEST_FILENAME} -f [OR]
-RewriteCond %{REQUEST_FILENAME} -d
-RewriteRule ^ - [L]
-
-# 3) pretty routes
-RewriteRule ^$ index.php [L,QSA]
-RewriteRule ^([A-Za-z0-9_-]+)/?$ index.php [L,QSA]
+  # /user_name  или /resume_slug (решим в PHP)
+  RewriteRule ^([A-Za-z0-9_-]+)/?$ index.php [L,QSA]
+</IfModule>
 
 # --- Optional: cache/compression ---
 <IfModule mod_expires.c>
