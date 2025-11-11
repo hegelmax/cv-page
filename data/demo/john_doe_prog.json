@@ -1,6 +1,15 @@
 {
+  "version": "1.0.9",
+  "track": {
+    "slug": "developer",
+    "label": "Programming / Engineering",
+    "icon": "fa-code",
+    "description": "Hands-on engineering: coding, architecture, systems, automation.",
+    "fallback": "demo/john_doe_prog.json"
+  },
   "name": "John Doe",
   "title": "Software Engineer | Full-Stack Developer | System Architect",
+  "image": "https://qr.hgl.mx/qr.svg",
   "contact": {
     "email": "john@example.com",
     "phone": "+1 (202) 555-1234",

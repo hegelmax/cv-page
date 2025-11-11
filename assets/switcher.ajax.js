@@ -21,12 +21,19 @@
       // ✅ Only handle same-origin links; external URLs should NOT be intercepted
       if (u.origin !== window.location.origin) return null;
       const p = (u.pathname || "/").replace(/\/+$/, "").toLowerCase() || "/";
+  
       if (p === "/") return "chooser";
-      if (p === "/developer") return "developer";
-      if (p === "/analyst") return "analyst";
+      // We don't intercept analytics using AJAX.
+      if (p.startsWith("/analytics")) return null;
+      if (!p.startsWith("/")) return null;
+  
+      // any /slug -> key = "slug"
+      return p.slice(1);
+    } catch {
       return null;
-    } catch { return null; }
+    }
   }
+
 
   function currentKey() {
     return keyFromURL(window.location.href) || "chooser";
@@ -45,23 +52,38 @@
     });
   }
 
-  function wireCopyButton() {
+  function wireInteractions() {
+    // 1) Copy link button
     const btn = document.getElementById("copyLinkBtn");
-    if (!btn) return;
-    btn.addEventListener("click", () => {
-      navigator.clipboard.writeText(window.location.href);
-      const prev = btn.innerHTML;
-      btn.innerHTML = "✅ Copied!";
-      setTimeout(() => (btn.innerHTML = prev), 1200);
-    });
+    if (btn && !btn.dataset.wired) {
+      btn.dataset.wired = "1";
+      btn.addEventListener("click", () => {
+        navigator.clipboard.writeText(window.location.href).catch(() => {});
+        const prev = btn.innerHTML;
+        btn.innerHTML = "✅ Copied!";
+        setTimeout(() => (btn.innerHTML = prev), 1200);
+      });
+    }
+    
+    // 2) Drop-down list of tracks (if any)
+    const sel = document.getElementById("trackSelect");
+    if (sel && !sel.dataset.wired) {
+      sel.dataset.wired = "1";
+      sel.addEventListener("change", () => {
+        const key = sel.value;
+        const cur = currentKey();
+        if (!key || key === cur) return;
+        ensureAndSwap(key, { push: true });
+      });
+    }
   }
 
-  // Fade-out → swap → fade-in
+  // Fade-out -> swap -> fade-in
   function animateSwap(html) {
     return new Promise((resolve) => {
       if (FADE_MS === 0) {
         root.innerHTML = html;
-        wireCopyButton();
+        wireInteractions();
         resolve();
         return;
       }
@@ -69,20 +91,20 @@
       // 1) Fade out
       root.style.willChange = "opacity";
       root.style.transition = `opacity ${FADE_MS}ms ease`;
-      // гарантируем начальное состояние
+      // guarantee the initial state
       root.style.opacity = "1";
-      // принудительный reflow
+      // forced reflow
       void root.offsetHeight;
-      // затемнение
+      // darkening
       root.style.opacity = "0";
 
       const onFadeOut = () => {
         root.removeEventListener("transitionend", onFadeOut);
         // 2) Swap HTML
         root.innerHTML = html;
-        wireCopyButton();
+        wireInteractions();
         // 3) Fade in
-        // сбросим transition на новый reflow
+        // reset the transition to the new reflow
         root.style.transition = `opacity ${FADE_MS}ms ease`;
         // reflow
         void root.offsetHeight;
@@ -120,7 +142,7 @@
       swapTo(key, cache.get(key), opts);
       return;
     }
-    // быстро показать загрузку (без мигания, если мгновенный кэш)
+    // quickly show loading (no blinking if instant cache)
     if (!isAnimating) root.innerHTML = `<div class="loading"><i class="fa-solid fa-spinner fa-spin"></i> Loading…</div>`;
     fetchPartialFor(key)
       .then((html) => {
@@ -129,7 +151,7 @@
       })
       .catch((err) => {
         console.error(err);
-        // fallback — обычная навигация
+        // fallback — normal navigation
         window.location.href = key === "chooser" ? "/" : `/${key}`;
       });
   }
@@ -158,16 +180,11 @@
   const initKey = currentKey();
   cache.set(initKey, root.innerHTML);
   history.replaceState({ track: initKey }, "", window.location.href);
-  wireCopyButton();
+  wireInteractions();
 
   window.addEventListener("popstate", (e) => {
     const st = e.state;
     const key = st ? st.track : currentKey();
     ensureAndSwap(key, { push: false });
   });
-  
-  const other = initKey === 'developer' ? 'analyst' : 'developer';
-  if (other !== 'chooser' && !cache.has(other)) {
-    fetchPartialFor(other).then(html => cache.set(other, html)).catch(()=>{});
-  }
 })();

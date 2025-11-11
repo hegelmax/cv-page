@@ -23,7 +23,7 @@ RewriteRule ^ - [L]
 
 # 3) pretty routes
 RewriteRule ^$ index.php [L,QSA]
-RewriteRule ^(developer|analyst)/?$ index.php [L,QSA]
+RewriteRule ^([A-Za-z0-9_-]+)/?$ index.php [L,QSA]
 
 # --- Optional: cache/compression ---
 <IfModule mod_expires.c>

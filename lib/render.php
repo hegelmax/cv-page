@@ -11,7 +11,7 @@ function tpl(string $name): string {
 function render_layout_page(string $inner): string {
   $tpl = tpl('layout.html');
 
-  // Собираем абсолютный canonical
+  // Collecting absolute canonical
   $scheme = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
   $host   = $_SERVER['HTTP_HOST'] ?? 'localhost';
   $uri    = $_SERVER['REQUEST_URI'] ?? '/';
@@ -31,30 +31,79 @@ function build_image(?string $src): string {
 
 
 function render_chooser_inner(array $TRACKS): string {
-  $tpl = tpl('chooser.html');
+  $tpl   = tpl('chooser.html');
   $cards = '';
-  foreach ($TRACKS as $key=>$t) {
-    $desc = ($key==='developer')
-      ? 'Hands-on engineering: coding, architecture, systems, automation.'
-      : 'Product/people leadership, analytics, delivery, stakeholder management.';
+
+  foreach ($TRACKS as $key => $t) {
+    $label = $t['label'] ?? ucfirst($key);
+    $icon  = $t['icon']  ?? 'fa-file-lines';
+    $desc  = trim((string)($t['description'] ?? ''));
     $cards .= "<a class='card' href='/" . h($key) . "'>"
-            . "<i class='fa-solid " . h($t['icon']) . "'></i>"
-            . "<div><h3>".h($t['label'])."</h3><p>{$desc}</p></div>"
-            . "</a>";
+            . "<i class='fa-solid " . h($icon) . "'></i>"
+            . "<div><h3>" . h($label) . "</h3>";
+    $cards .= ($desc !== '' ? "<p>" . h($desc) . "</p>" : '');
+    $cards .= "</div></a>";
   }
+
   return str_replace('##CARDS##', $cards, $tpl);
 }
 
-function render_resume_inner(string $track, array $meta, array $json, string $templatePath, array $TRACKS): string {
-  $mapping = build_mapping($json);
-  $bodyTpl = file_get_contents($templatePath) ?: '';
-  $body = preg_replace_callback('/##([A-Z0-9_]+)##/', fn($m) => $mapping[$m[1]] ?? '', $bodyTpl);
 
-  $topbar = tpl('topbar.html');
-  $btn = fn(string $key, array $t) =>
-    "<a class='btn ".($key===$track?'active':'')."' href='/" . h($key) . "'>"
-    . "<i class='fa-solid " . h($t['icon']) . "'></i> " . h(explode(' ', $t['label'])[0]) . "</a>";
-  foreach ($TRACKS as $k=>$t) $topbar = str_replace("##BTN_{$k}##", $btn($k, $t), $topbar);
+function render_resume_inner(string $track, array $meta, array $json, string $templatePath, array $TRACKS): string {
+  $mapping   = build_mapping($json);
+  $bodyTpl   = file_get_contents($templatePath) ?: '';
+  $body      = preg_replace_callback('/##([A-Z0-9_]+)##/', fn($m) => $mapping[$m[1]] ?? '', $bodyTpl);
+
+  // 2) Topbar + track selection segment
+  $topbarTpl  = tpl('topbar.html');
+  $trackCount = count($TRACKS);
+
+  // Add a class modifier to the topbar so that CSS understands "little" vs. "lot"
+  $modifier = '';
+  if ($trackCount > 3) {
+    $modifier = ' topbar--many';
+  } elseif ($trackCount > 1) {
+    $modifier = ' topbar--few';
+  }
+
+  if ($modifier !== '') {
+    $topbarTpl = str_replace('class="topbar"', 'class="topbar'.$modifier.'"', $topbarTpl);
+  }
+
+  $segmentHtml = '';
+
+  if ($trackCount > 1) {
+    // 2.1. Buttons
+    $buttonsHtml = '';
+    foreach ($TRACKS as $key => $t) {
+      $slug  = (string)$key;
+      $label = $t['label'] ?? ucfirst($slug);
+      $short = $t['short'] ?? (explode(' ', trim($label))[0] ?: $label);
+      $icon  = $t['icon']  ?? 'fa-file-lines';
+
+      $buttonsHtml .=
+        "<a class='btn ".($slug === $track ? "active" : "")."' href='/".h($slug)."'>".
+          "<i class='fa-solid ".h($icon)."'></i> ".
+          h($short).
+        "</a>";
+    }
+    $buttonsHtml = "<div class='seg-buttons'>".$buttonsHtml."</div>";
+
+    // 2.2. Drop-down list
+    $selectHtml = "<div class='seg-select-wrapper'><select id='trackSelect' class='seg-select'>";
+    foreach ($TRACKS as $key => $t) {
+      $slug     = (string)$key;
+      $label    = $t['label'] ?? ucfirst($slug);
+      $selected = ($slug === $track) ? ' selected' : '';
+      $selectHtml .= "<option value='".h($slug)."'".$selected.">".h($label)."</option>";
+    }
+    $selectHtml .= "</select></div>";
+
+    // 2.3. Both options in SEGMENT
+    $segmentHtml = $buttonsHtml.$selectHtml;
+  }
+
+  $topbar = str_replace('##SEGMENT##', $segmentHtml, $topbarTpl);
 
   $tpl = tpl('resume_inner.html');
   return str_replace(['##TOPBAR##','##BODY##'], [$topbar, $body], $tpl);

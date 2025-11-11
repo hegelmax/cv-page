@@ -1,6 +1,15 @@
 {
+  "version": "1.0.9",
+  "track": {
+    "slug": "analyst",
+    "label": "Management / Analytics",
+    "icon": "fa-chart-line",
+    "description": "Product/people leadership, analytics, delivery, stakeholder management.",
+    "fallback": "demo/john_doe_analyst.json"
+  },
   "name": "John Doe",
   "title": "Product Owner | Business Analyst | Data Strategy Lead",
+  "image": "https://qr.hgl.mx/qr.svg",
   "contact": {
     "email": "john@example.com",
     "phone": "+1 (202) 555-1234",
