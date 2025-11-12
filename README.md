@@ -1,7 +1,7 @@
 # MyCV — Dynamic Resume & Portfolio
 
 A lightweight, self-hosted resume/portfolio app built with **PHP + JSON + AJAX**.  
-It’s fast, privacy-friendly, and includes a secure built-in **Analytics Dashboard** (SQLite + Chart.js).
+It’s fast, privacy-friendly, and includes a secure built-in **Analytics Dashboard** (SQLite + Chart.js) and with integrated editing studio.
 
 Now supports **multiple users** — each with their own resume set and analytics stats.
 
@@ -21,6 +21,7 @@ Demo data (no personal info): **John Doe** for both tracks.
 - 🔐 **Secure web login + setup wizard** for analytics  
 - 🧱 **No third-party trackers** or external databases  
 - 📦 **Demo fallback**: loads default or demo JSONs if real data absent  
+- 🎨 **Resume Studio** - New `/studio/` section with modular JS structure and basic formatting tools  
 
 ---
 
@@ -29,8 +30,11 @@ Demo data (no personal info): **John Doe** for both tracks.
 ```
 /
 ├─ index.php # Router and cache logic
-├─ init.php # Ensures /cache directory exists
-├─ lib/render.php # Template + cache rendering
+├── lib/
+│ ├── render.php # Template + cache rendering
+│ ├── router.php → centralized routing
+│ ├── functions.php→ helper utilities
+│ └── init.php → global includes
 ├─ analytics/ # Built-in dashboard
 │ ├─ setup.php # First-time setup (login+password)
 │ ├─ login.php, logout.php, auth.php
@@ -47,6 +51,10 @@ Demo data (no personal info): **John Doe** for both tracks.
 │ ├─ user1/ # Example user 1
 │ ├─ user2/ # Example user 2
 │ └─ demo/ # Demo fallback
+├── studio/ → resume editor (SPA)
+│ ├── assets/ → CSS and JS modules
+│ ├── api.php → api for studio module
+│ └── index.php → main script
 ├─ templates/
 │ ├─ layout.html
 │ ├─ chooser.html
@@ -68,12 +76,14 @@ Demo data (no personal info): **John Doe** for both tracks.
 ## 🧠 Multi-User Routing
 
 ### URL Patterns
-| Path | Behavior |
+| Path | Action |
 |------|-----------|
+| `/analytics/` | Loads analytics module |
+| `/studio/` or `/studio/api` | Loads Resume Studio or API handler |
 | `/` | Default user chooser page (if multiple resumes) |
-| `/resume_slug` | Loads resume from `data/default/resume_slug.json` |
+| `/resume` | Loads resume from `data/default/resume.json` |
 | `/user_name` | If user has one resume, opens it directly |
-| `/user_name/resume_slug` | Loads `data/user_name/resume_slug.json` |
+| `/user_name/resume` | Loads `data/user_name/resume.json` |
 
 ### Auto-Detection
 Each visit is automatically tagged with its **user** based on the URL path.  
@@ -142,12 +152,6 @@ cd cv-page
 
 Then open `/analytics/` in browser — the setup wizard will guide you.  
 If `/analytics/config.php` exists, just sign in.
-
-Default public pages:
-- `/` → track chooser  
-- `/developer` → Developer resume (John Doe demo)  
-- `/analyst` → Analyst resume (John Doe demo)  
-- `/analytics/` → Dashboard (after login)
 
 ---
 

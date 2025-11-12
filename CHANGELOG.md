@@ -2,6 +2,35 @@
 
 All notable changes to **MyCV** project.
 
+# MyCV — Change Log
+
+## [v1.3.0] - Studio added
+
+### Added
+- **New /studio/ module** — internal Resume Studio for editing resumes.
+  - Added SPA-style routing for `/studio/` and `/studio/api`.
+  - New asset structure: all JS modules are now located in `/studio/assets/js/` with the main entry script `studio.js`.
+  - Introduced a basic Summary editor with bold, italic, and underline formatting buttons.
+- **New PHP router (`lib/router.php`)**
+  - Centralized route handling for `/studio`, `/analytics`, `/user`, `/user/resume`, and root paths.
+  - Added universal `resolve_route()` function for consistent user/resume path parsing.
+  - Simplified `.htaccess` — no longer requires explicit exceptions for `/analytics`.
+- **Helper functions moved to `lib/functions.php`**
+  - Shared utilities (e.g., sanitization, JSON loading, route helpers) consolidated for reuse.
+
+### Changed
+- `index.php` now relies on the new router instead of handling route logic directly.
+- Directory structure unified: analytics and studio modules are now loaded via relative paths (`../analytics`, `../studio`) from the router.
+- CSP rules in `.htaccess` refined for safer external script loading.
+
+### Fixed
+- Minor notices and path resolution warnings in route handling.
+- Incorrect `require` paths inside the router (now correctly resolve one level up).
+
+### Removed
+- Legacy `.htaccess` rewrite exception for `/analytics`.
+
+
 ## [v1.2.0] — Multi-User Resume Analytics
 
 ### 🚀 Added
