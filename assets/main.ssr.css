@@ -322,7 +322,7 @@ a.grey-link:hover { border-bottom-color: rgba(55,65,81,.7); }
 [data-theme="dark"] .company { color: var(--ink); }
 [data-theme="dark"] .company_name { color: var(--brand); }
 
-[data-theme="dark"] .badge { background: #0c1118; color: var(--ink); }
+[data-theme="dark"] .badge { background: darkgray; color: black; }
 [data-theme="dark"] .details,
 [data-theme="dark"] .contact { color: var(--muted); }
 [data-theme="dark"] .project-desc,
